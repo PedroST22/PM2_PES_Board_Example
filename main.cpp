@@ -39,9 +39,15 @@ int main()
     // Sharp GP2Y0A41SK0F, 4-40 cm IR Sensor
     float ir_distance_mV = 0.0f; // define variable to store measurement
     //??? // create AnalogIn object to read in infrared distance sensor, 0...3.3V are mapped to 0...1
+    AnalogIn ir_distance_sensor(PC_2);
+    
 
 
     main_task_timer.start();
+    float a = 1.05*10000;
+    float b= 36.42;
+    float ir_distance_cm;
+
     
     // this loop will run forever
     while (true) {
@@ -54,7 +60,8 @@ int main()
 
                 // read analog input
                 //ir_distance_mV = ???;
-
+                ir_distance_mV = ir_distance_sensor.read()*3300; //Umrechnung in mV
+                ir_distance_cm = a/((ir_distance_mV + b) + 0.001f);
             }
 
             // visual feedback that the main task is executed, setting this once would actually be enough
@@ -64,7 +71,6 @@ int main()
 
             if (do_reset_all_once) {
                 do_reset_all_once = false;
-
                 ir_distance_mV = 0.0f;
 
                 additional_led = 0;
@@ -75,7 +81,7 @@ int main()
         user_led = !user_led;
 
         // do only output via serial what's really necessary, this makes your code slow
-        printf("IR sensor (mV): %3.3f\r\n", ir_distance_mV);
+        printf("IR sensor (cm): %3.3f\r\n", ir_distance_cm);
 
         // read timer and make the main thread sleep for the remaining time span (non blocking)
         int main_task_elapsed_time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(main_task_timer.elapsed_time()).count();
